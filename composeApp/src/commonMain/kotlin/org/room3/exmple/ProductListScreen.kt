@@ -28,13 +28,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -47,6 +44,7 @@ import org.room3.exmple.presentation.list.ProductListState
 fun ProductListScreen(
     state: ProductListState,
     onProductClick: (Int) -> Unit,
+    onToggleFavorite: (Int) -> Unit,
     onRetry: () -> Unit
 ) {
     Scaffold(
@@ -68,11 +66,12 @@ fun ProductListScreen(
                 state.isLoading -> {
                     CircularProgressIndicator()
                 }
+
                 state.error != null -> {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = state.error,
-                            color = MaterialTheme.colorScheme.error,
+                            color = Color.Black,
                             style = MaterialTheme.typography.bodyLarge
                         )
                         TextButton(onClick = onRetry) {
@@ -80,6 +79,8 @@ fun ProductListScreen(
                         }
                     }
                 }
+
+
                 else -> {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
@@ -91,7 +92,9 @@ fun ProductListScreen(
                         items(state.products, key = { it.id }) { product ->
                             ProductGridItem(
                                 product = product,
-                                onClick = { onProductClick(product.id) }
+                                isFavorite = product.id in state.favoriteIds,
+                                onClick = { onProductClick(product.id) },
+                                onToggleFavorite = { onToggleFavorite(product.id) }
                             )
                         }
                     }
@@ -104,7 +107,9 @@ fun ProductListScreen(
 @Composable
 fun ProductGridItem(
     product: Product,
-    onClick: () -> Unit
+    isFavorite: Boolean,
+    onClick: () -> Unit,
+    onToggleFavorite: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -123,15 +128,14 @@ fun ProductGridItem(
                     contentScale = ContentScale.Crop
                 )
 
-                var isFav by remember { mutableStateOf(false) }
                 IconButton(
-                    onClick = { isFav = !isFav },
+                    onClick = onToggleFavorite,
                     modifier = Modifier.align(Alignment.TopEnd)
                 ) {
                     Icon(
-                        imageVector = if (isFav) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (isFav) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                        tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

@@ -57,6 +57,9 @@ fun App() {
                             onProductClick = { productId ->
                                 backStack.add(ProductDetailRoute(productId))
                             },
+                            onToggleFavorite = { productId ->
+                                viewModel.toggleFavorite(productId)
+                            },
                             onRetry = { viewModel.loadProducts() }
                         )
                     }
